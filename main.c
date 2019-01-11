@@ -74,12 +74,41 @@ int main()
     // Create allegro display
     display = al_create_display(DISPLAY_WIDTH, DISPLAY_HEIGHT);
 
+
+    int i;
+    timer1 = al_create_timer(1.0 / FPS);
+    al_register_event_source(event_queue, al_get_timer_event_source(timer1));
+    //al_start_timer(timer1);
+
+    while(1)
+    {
+         al_start_timer(timer1);
+        if (!al_is_event_queue_empty(event_queue))
+            {
+                  while (al_get_next_event(event_queue, &events))
+                  {
+
+                         switch (events.type)
+                         {
+                            case ALLEGRO_EVENT_TIMER:
+                            i=i+1;
+                            printf("Hello, timer %d\n", i);
+                             //monster_fall_straight(monster,1);
+                            break;
+                         }
+                  }
+             }
+    }
+
+
+
     load_monster(monster);
 //    monster_fall_wave(monster);
-    monster_fall_straight(monster,1);
+//    monster_fall_straight(monster,1);
 
 
     // Wait for keyboard event
+
     al_wait_for_event(event_queue, &events);
     al_destroy_event_queue(event_queue);
 
@@ -94,7 +123,7 @@ void load_monster(struct MONSTER *monster)
 
 void monster_fall_straight(struct MONSTER *monster,int count)
 {
-    int i,x,y;
+    int i,y;
     int count_vary[TRACK];
 
     y=0;
@@ -105,7 +134,7 @@ void monster_fall_straight(struct MONSTER *monster,int count)
     {
         monster_fall_parallel(monster,y,count_vary);
 
-        al_rest(0.01);
+        al_rest(0.001);
         al_flip_display();
 
         y = y + 1;
@@ -149,18 +178,32 @@ void determine_appear_count(int *count)
         *(count+i)=j;
     }
 }
-void monster_fall_wave(struct MONSTER *monster)
-{
-    int i;
+//void monster_fall_wave(struct MONSTER *monster)
+//{
+//    int i;
+//
+//    event_queue = al_create_event_queue();
+//    timer1 = al_create_timer(3.0 / FPS);
+//    al_register_event_source(event_queue, al_get_timer_event_source(timer1));
+//    al_start_timer(timer1);
+//
+//    for(i=0;i<10;i=i+1)
+//    {
+//
+//        if (!al_is_event_queue_empty(event_queue))
+//            {
+//                        printf("%d \n",i);
+//                  while (al_get_next_event(event_queue, &events))
+//                  {
+//                         switch (events.type)
+//                         {
+//                            case ALLEGRO_EVENT_TIMER:
+//                            i=i+1;
+//                            printf("Hello, timer %d\n", i);
+//                            break;
+//                         }
+//                  }
+//             }
+//    }
 
-    event_queue = al_create_event_queue();
-    timer1 = al_create_timer(3.0 / FPS);
-    al_register_event_source(event_queue, al_get_timer_event_source(timer1));
-    al_start_timer(timer1);
-
-    for(i=0;i<10;i=i+1)
-    {
-        printf("%d \n",i);
-    }
-
-}
+//}
