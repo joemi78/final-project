@@ -29,6 +29,9 @@ void monster_fall_straight(struct MONSTER *monster,int count);
 int random(int *ptr,int max,int min);
 void monster_fall_parallel(struct MONSTER *monster,int y,int *count);
 void determine_appear_count(int *count);
+void monster_fall_wave(struct MONSTER *monster);
+
+float FPS=1;
 
 
 // Definition of display size
@@ -36,9 +39,13 @@ void determine_appear_count(int *count);
 #define DISPLAY_HEIGHT  640
 #define TRACK 6
 
-ALLEGRO_EVENT alEvent;
-ALLEGRO_EVENT_QUEUE* alEventQueue = NULL;
+
+
+ALLEGRO_EVENT_QUEUE* event_queue = NULL; /* create event queue */
 ALLEGRO_TIMER *timer1 = NULL;
+ALLEGRO_EVENT events;
+
+
 
 int main()
 {
@@ -61,19 +68,20 @@ int main()
     al_init_font_addon();    // install font addons
     al_init_ttf_addon();
 
-    alEventQueue = al_create_event_queue();
+    event_queue = al_create_event_queue();
 
 
     // Create allegro display
     display = al_create_display(DISPLAY_WIDTH, DISPLAY_HEIGHT);
 
     load_monster(monster);
+//    monster_fall_wave(monster);
     monster_fall_straight(monster,1);
 
 
     // Wait for keyboard event
-    al_wait_for_event(alEventQueue, &alEvent);
-    al_destroy_event_queue(alEventQueue);
+    al_wait_for_event(event_queue, &events);
+    al_destroy_event_queue(event_queue);
 
 
     return 0;
@@ -86,7 +94,7 @@ void load_monster(struct MONSTER *monster)
 
 void monster_fall_straight(struct MONSTER *monster,int count)
 {
-    int i,j,x,y;
+    int i,x,y;
     int count_vary[TRACK];
 
     y=0;
@@ -141,4 +149,18 @@ void determine_appear_count(int *count)
         *(count+i)=j;
     }
 }
+void monster_fall_wave(struct MONSTER *monster)
+{
+    int i;
 
+    event_queue = al_create_event_queue();
+    timer1 = al_create_timer(3.0 / FPS);
+    al_register_event_source(event_queue, al_get_timer_event_source(timer1));
+    al_start_timer(timer1);
+
+    for(i=0;i<10;i=i+1)
+    {
+        printf("%d \n",i);
+    }
+
+}
