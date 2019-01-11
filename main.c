@@ -2,10 +2,15 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_primitives.h>
-#include <allegro5/allegro_image.h>
+
 #include <allegro5/allegro_native_dialog.h>
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_image.h>
+#include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_audio.h>
+#include <allegro5/allegro_acodec.h>
+#include <allegro5/allegro_ttf.h>
+#include <allegro5/allegro_font.h>
 
 #include <windows.h>
 
@@ -33,23 +38,28 @@ void determine_appear_count(int *count);
 
 ALLEGRO_EVENT alEvent;
 ALLEGRO_EVENT_QUEUE* alEventQueue = NULL;
+ALLEGRO_TIMER *timer1 = NULL;
 
 int main()
 {
     srand(time(NULL));
 
-    ALLEGRO_BITMAP* bitmap = NULL;
     ALLEGRO_DISPLAY* display = NULL;
 
-    struct ALLEGRO_OBJECT picture[0]={NULL};
-    struct MONSTER monster[0]={NULL};
+    struct ALLEGRO_OBJECT picture[0]= {NULL};
+    struct MONSTER monster[0]= {NULL};
 
 
     // Initialize Allegro
-    al_init();
+
+    al_init(); /* initialize Allegro */
     al_init_primitives_addon();
-    al_install_keyboard();
     al_init_image_addon();
+    al_install_audio();  // install sound driver
+    al_init_acodec_addon();
+    al_reserve_samples(9);
+    al_init_font_addon();    // install font addons
+    al_init_ttf_addon();
 
     alEventQueue = al_create_event_queue();
 
@@ -111,21 +121,21 @@ int random(int *ptr,int max,int min)
 }
 
 void monster_fall_parallel(struct MONSTER *monster,int y,int *count)
- {
-     int i;
-     for(i=0;i<TRACK;i=i+1)
-     {
-         if((*(count+i)==1) || (*(count+i)==2) || (*(count+i)==3))
-         {
-            al_draw_scaled_bitmap((monster+0)->monster1, 0, 0,al_get_bitmap_width ((monster+0)->monster1), al_get_bitmap_height((monster+0)->monster1), i*(DISPLAY_WIDTH / TRACK) , y,70, 70,0);
-         }
+{
+    int i;
+    for(i=0; i<TRACK; i=i+1)
+    {
+        if((*(count+i)==1) || (*(count+i)==2) || (*(count+i)==3))
+        {
+            al_draw_scaled_bitmap((monster+0)->monster1, 0, 0,al_get_bitmap_width ((monster+0)->monster1), al_get_bitmap_height((monster+0)->monster1), i*(DISPLAY_WIDTH / TRACK), y,70, 70,0);
+        }
     }
- }
+}
 
 void determine_appear_count(int *count)
 {
     int i,j;
-    for(i=0;i<TRACK;i=i+1)
+    for(i=0; i<TRACK; i=i+1)
     {
         j=random(&j,4,0);
         *(count+i)=j;
