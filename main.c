@@ -11,7 +11,7 @@
 
 struct ALLEGRO_OBJECT
 {
-    ALLEGRO_DISPLAY* display;
+    ALLEGRO_BITMAP* background;
 
 };
 struct MONSTER
@@ -19,24 +19,30 @@ struct MONSTER
     ALLEGRO_BITMAP* monster1;
 };
 
+void load_monster(struct MONSTER *monster);
+void monster_fall_straight(struct MONSTER *monster,int count);
+int random(int *ptr,int max,int min);
+void monster_fall_parallel(struct MONSTER *monster,int y,int *count);
+void determine_appear_count(int *count);
+
 
 // Definition of display size
-#define DISPLAY_WIDTH   640
-#define DISPLAY_HEIGHT  480
+#define DISPLAY_WIDTH   480
+#define DISPLAY_HEIGHT  640
+#define TRACK 6
 
 ALLEGRO_EVENT alEvent;
 ALLEGRO_EVENT_QUEUE* alEventQueue = NULL;
 
 int main()
 {
-    int i;
-    int x, y;
+    srand(time(NULL));
 
     ALLEGRO_BITMAP* bitmap = NULL;
-        ALLEGRO_DISPLAY* display = NULL;
+    ALLEGRO_DISPLAY* display = NULL;
 
-//    struct ALLEGRO_OBJECT picture[0]={NULL};
-//    struct MONSTER monster[0]={NULL};
+    struct ALLEGRO_OBJECT picture[0]={NULL};
+    struct MONSTER monster[0]={NULL};
 
 
     // Initialize Allegro
@@ -45,92 +51,84 @@ int main()
     al_install_keyboard();
     al_init_image_addon();
 
-    // Create allegro display
-    display = al_create_display(DISPLAY_WIDTH, DISPLAY_HEIGHT);
-
-
-    // Create Event Queue
     alEventQueue = al_create_event_queue();
 
 
-    // Load bitmap
-//    monster[0].monster1 = al_load_bitmap("./blue.jpg");
-//    al_draw_bitmap(monster[0].monster1, 100, 100, 0);
+    // Create allegro display
+    display = al_create_display(DISPLAY_WIDTH, DISPLAY_HEIGHT);
 
-    bitmap = al_load_bitmap("./blue.jpg");
+    load_monster(monster);
+    monster_fall_straight(monster,1);
 
-    al_draw_bitmap(bitmap, 200, 200, 0);
-
-
-
-//    // Register keyboard and mouse to event queue
-//    al_register_event_source(alEventQueue, al_get_keyboard_event_source());
-//
-//    // Move bitmap
-//    x = 500;
-//    y = 0;
-//    for(i = 0; y < 480; i++)
-//    {
-//        // Draw bitmap
-//        al_draw_scaled_bitmap(bitmap, 0, 0,
-//                              al_get_bitmap_width(bitmap), al_get_bitmap_height(bitmap),
-//                              x, y,
-//                              100, 100,
-//                              0
-//                              );
-//
-//        // Flip display to show the drawing result
-//        al_flip_display();
-//printf("123");
-//        // Delay
-//        al_rest(0.01);
-//
-//
-//        y = y + 1;
-//
-//        // Clear display
-//        al_clear_to_color(al_map_rgb(0, 0, 0));
-//    }
-//
-//
-//
-//    // Register keyboard and mouse to event queue
-//    al_register_event_source(alEventQueue, al_get_keyboard_event_source());
-//
-//    // Move bitmap
-//    x = 0;
-//    y = 0;
-//    for(i = 0; y < 480; i++)
-//    {
-//        // Draw bitmap
-//        al_draw_scaled_bitmap(bitmap, 0, 0,
-//                              al_get_bitmap_width(bitmap), al_get_bitmap_height(bitmap),
-//                              x, y,
-//                              100, 100,
-//                              0
-//                              );
-//
-//        // Flip display to show the drawing result
-//        al_flip_display();
-//printf("123");
-//        // Delay
-//        al_rest(0.01);
-//
-//
-//        y = y + 1;
-//
-//        // Clear display
-//        al_clear_to_color(al_map_rgb(0, 0, 0));
-//    }
 
     // Wait for keyboard event
     al_wait_for_event(alEventQueue, &alEvent);
-
-    // Cleanup
     al_destroy_event_queue(alEventQueue);
 
 
     return 0;
 }
 
+void load_monster(struct MONSTER *monster)
+{
+    (monster+0)->monster1=al_load_bitmap("./blue.jpg");
+}
+
+void monster_fall_straight(struct MONSTER *monster,int count)
+{
+    int i,j,x,y;
+    int count_vary[TRACK];
+
+    y=0;
+
+    determine_appear_count(count_vary);
+
+    for(i = 0; y < DISPLAY_HEIGHT; i++)
+    {
+        monster_fall_parallel(monster,y,count_vary);
+
+        al_rest(0.01);
+        al_flip_display();
+
+        y = y + 1;
+
+        al_clear_to_color(al_map_rgb(0, 0, 0));
+    }
+
+}
+
+int random(int *ptr,int max,int min)
+//Random number with upper and lower bounds
+//input Upper and lower bound and pointer
+//output Random number;
+{
+    int i,random;
+    i=max-min;
+    random=(rand()%(i+1))+1;
+    *ptr=random+min-1;
+
+    return *ptr;
+}
+
+void monster_fall_parallel(struct MONSTER *monster,int y,int *count)
+ {
+     int i;
+     for(i=0;i<TRACK;i=i+1)
+     {
+         if((*(count+i)==1) || (*(count+i)==2) || (*(count+i)==3))
+         {
+            al_draw_scaled_bitmap((monster+0)->monster1, 0, 0,al_get_bitmap_width ((monster+0)->monster1), al_get_bitmap_height((monster+0)->monster1), i*(DISPLAY_WIDTH / TRACK) , y,70, 70,0);
+         }
+    }
+ }
+
+void determine_appear_count(int *count)
+{
+    int i,j;
+    for(i=0;i<TRACK;i=i+1)
+    {
+        j=random(&j,4,0);
+        *(count+i)=j;
+    }
+}
 
