@@ -25,7 +25,7 @@ struct MONSTER
 };
 
 void load_monster(struct MONSTER *monster);
-void monster_fall_straight(struct MONSTER *monster,int count);
+void monster_fall_straight(struct MONSTER *monster);
 int random(int *ptr,int max,int min);
 void monster_fall_parallel(struct MONSTER *monster,int y,int *count);
 void determine_appear_count(int *count);
@@ -54,7 +54,7 @@ int main()
     ALLEGRO_DISPLAY* display = NULL;
 
     struct ALLEGRO_OBJECT picture[0]= {NULL};
-    struct MONSTER monster[0]= {NULL};
+    struct MONSTER monster[TRACK]= {NULL};
 
 
     // Initialize Allegro
@@ -75,36 +75,10 @@ int main()
     display = al_create_display(DISPLAY_WIDTH, DISPLAY_HEIGHT);
 
 
-    int i;
-    timer1 = al_create_timer(1.0 / FPS);
-    al_register_event_source(event_queue, al_get_timer_event_source(timer1));
-    //al_start_timer(timer1);
-
-    while(1)
-    {
-         al_start_timer(timer1);
-        if (!al_is_event_queue_empty(event_queue))
-            {
-                  while (al_get_next_event(event_queue, &events))
-                  {
-
-                         switch (events.type)
-                         {
-                            case ALLEGRO_EVENT_TIMER:
-                            i=i+1;
-                            printf("Hello, timer %d\n", i);
-                             //monster_fall_straight(monster,1);
-                            break;
-                         }
-                  }
-             }
-    }
-
 
 
     load_monster(monster);
-//    monster_fall_wave(monster);
-//    monster_fall_straight(monster,1);
+    monster_fall_straight(monster);
 
 
     // Wait for keyboard event
@@ -118,10 +92,16 @@ int main()
 
 void load_monster(struct MONSTER *monster)
 {
-    (monster+0)->monster1=al_load_bitmap("./blue.jpg");
+    int i;
+
+    for(i=0;i<TRACK;i=i+1)
+    {
+       (monster+i)->monster1=al_load_bitmap("./blue.jpg");
+    }
+
 }
 
-void monster_fall_straight(struct MONSTER *monster,int count)
+void monster_fall_straight(struct MONSTER *monster)
 {
     int i,y;
     int count_vary[TRACK];
@@ -134,7 +114,7 @@ void monster_fall_straight(struct MONSTER *monster,int count)
     {
         monster_fall_parallel(monster,y,count_vary);
 
-        al_rest(0.001);
+        al_rest(0.01);
         al_flip_display();
 
         y = y + 1;
@@ -164,7 +144,7 @@ void monster_fall_parallel(struct MONSTER *monster,int y,int *count)
     {
         if((*(count+i)==1) || (*(count+i)==2) || (*(count+i)==3))
         {
-            al_draw_scaled_bitmap((monster+0)->monster1, 0, 0,al_get_bitmap_width ((monster+0)->monster1), al_get_bitmap_height((monster+0)->monster1), i*(DISPLAY_WIDTH / TRACK), y,70, 70,0);
+            al_draw_scaled_bitmap((monster+i)->monster1, 0, 0,al_get_bitmap_width ((monster+i)->monster1), al_get_bitmap_height((monster+i)->monster1), i*(DISPLAY_WIDTH / TRACK), y,70, 70,0);
         }
     }
 }
@@ -178,32 +158,4 @@ void determine_appear_count(int *count)
         *(count+i)=j;
     }
 }
-//void monster_fall_wave(struct MONSTER *monster)
-//{
-//    int i;
-//
-//    event_queue = al_create_event_queue();
-//    timer1 = al_create_timer(3.0 / FPS);
-//    al_register_event_source(event_queue, al_get_timer_event_source(timer1));
-//    al_start_timer(timer1);
-//
-//    for(i=0;i<10;i=i+1)
-//    {
-//
-//        if (!al_is_event_queue_empty(event_queue))
-//            {
-//                        printf("%d \n",i);
-//                  while (al_get_next_event(event_queue, &events))
-//                  {
-//                         switch (events.type)
-//                         {
-//                            case ALLEGRO_EVENT_TIMER:
-//                            i=i+1;
-//                            printf("Hello, timer %d\n", i);
-//                            break;
-//                         }
-//                  }
-//             }
-//    }
 
-//}
