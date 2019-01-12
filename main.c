@@ -103,23 +103,46 @@ void load_monster(struct MONSTER *monster)
 
 void monster_fall_straight(struct MONSTER *monster)
 {
-    int i,y;
-    int count_vary[TRACK];
+    int i,y1,y2;
+    int count_vary1[TRACK];
+    int count_vary2[TRACK];
+    int count1;
 
-    y=0;
+    determine_appear_count(count_vary2);
 
-    determine_appear_count(count_vary);
+    y1=0;
+    y2=0;
+    count1=0;
 
-    for(i = 0; y < DISPLAY_HEIGHT; i++)
+
+    while(1)
     {
-        monster_fall_parallel(monster,y,count_vary);
+//
+        if((count1 % DISPLAY_HEIGHT) == 0)
+        {
+           if( (y1 % DISPLAY_HEIGHT) == 0)
+           {
+               y1=0;
+               determine_appear_count(count_vary1);
+           }
+        }
 
-        al_rest(0.01);
+        monster_fall_parallel(monster,y1,count_vary1);
+
+
+
+
+        al_rest(0.001);
         al_flip_display();
 
-        y = y + 1;
+        y1 = y1 + 1;
+        y2 = y2 + 1;
+
+        count1=count1+1;
+
 
         al_clear_to_color(al_map_rgb(0, 0, 0));
+
     }
 
 }
