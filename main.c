@@ -29,7 +29,7 @@ void monster_fall_straight(struct MONSTER *monster);
 int random(int *ptr,int max,int min);
 void monster_fall_parallel(struct MONSTER *monster,int y,int *count);
 void determine_appear_count(int *count);
-void monster_fall_wave(struct MONSTER *monster);
+int monster_fall_wave(int count,int *count_vary,int y);
 
 float FPS=1;
 
@@ -94,9 +94,9 @@ void load_monster(struct MONSTER *monster)
 {
     int i;
 
-    for(i=0;i<TRACK;i=i+1)
+    for(i=0; i<TRACK; i=i+1)
     {
-       (monster+i)->monster1=al_load_bitmap("./blue.jpg");
+        (monster+i)->monster1=al_load_bitmap("./blue.jpg");
     }
 
 }
@@ -106,30 +106,23 @@ void monster_fall_straight(struct MONSTER *monster)
     int i,y1,y2;
     int count_vary1[TRACK];
     int count_vary2[TRACK];
-    int count1;
-
-    determine_appear_count(count_vary2);
+    int count1,count2;
 
     y1=0;
     y2=0;
     count1=0;
+    count2=(DISPLAY_HEIGHT/2);
 
 
     while(1)
     {
-//
-        if((count1 % DISPLAY_HEIGHT) == 0)
-        {
-           if( (y1 % DISPLAY_HEIGHT) == 0)
-           {
-               y1=0;
-               determine_appear_count(count_vary1);
-           }
-        }
 
+
+        y1=monster_fall_wave(count1,count_vary1,y1);
         monster_fall_parallel(monster,y1,count_vary1);
 
-
+        y2=monster_fall_wave(count2,count_vary2,y2);
+        monster_fall_parallel(monster,y2,count_vary2);
 
 
         al_rest(0.001);
@@ -139,12 +132,26 @@ void monster_fall_straight(struct MONSTER *monster)
         y2 = y2 + 1;
 
         count1=count1+1;
+        count2=count2+1;
 
 
         al_clear_to_color(al_map_rgb(0, 0, 0));
 
     }
 
+}
+
+int monster_fall_wave(int count,int *count_vary,int y)
+{
+    if( (count % DISPLAY_HEIGHT) == 0)
+    {
+        determine_appear_count(count_vary);
+        return 0;
+    }
+    else
+    {
+        return y;
+    }
 }
 
 int random(int *ptr,int max,int min)
@@ -165,7 +172,7 @@ void monster_fall_parallel(struct MONSTER *monster,int y,int *count)
     int i;
     for(i=0; i<TRACK; i=i+1)
     {
-        if((*(count+i)==1) || (*(count+i)==2) || (*(count+i)==3))
+        if((*(count+i)==1) || (*(count+i)==2) || (*(count+i)==3) || (*(count+i)==4))
         {
             al_draw_scaled_bitmap((monster+i)->monster1, 0, 0,al_get_bitmap_width ((monster+i)->monster1), al_get_bitmap_height((monster+i)->monster1), i*(DISPLAY_WIDTH / TRACK), y,70, 70,0);
         }
