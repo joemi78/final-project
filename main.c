@@ -52,8 +52,8 @@ float FPS=1;
 #define DISPLAY_HEIGHT  640
 #define TRACK 6
 #define PLANE_MOVE 3
-#define plane_W 80
-#define plane_H 84
+#define plane_W 50
+#define plane_H 50
 #define MONSTER_SIZE 70
 #define PLANE_SIZE 50
 #define BULLET_SIZE 30
@@ -255,8 +255,8 @@ void Move_Plane(struct PLANE *plane)
 
 
     /* make sure the plane do not go out off screen */
-    if (plane_x  < 0  )             plane_x  = DISPLAY_WIDTH -plane_W;
-    if (plane_x  > DISPLAY_WIDTH -plane_W )       plane_x  = 0;
+    if (plane_x  < 0  )             plane_x  = 0;
+    if (plane_x  > DISPLAY_WIDTH -plane_W )       plane_x  = DISPLAY_WIDTH -plane_W;
 
  //  al_draw_bitmap( (plane)->plane , plane_x, 560, 0);
     al_draw_scaled_bitmap((plane)->plane, 0, 0,al_get_bitmap_width ((plane)->plane), al_get_bitmap_height((plane)->plane), plane_x, DISPLAY_HEIGHT-PLANE_SIZE, PLANE_SIZE , PLANE_SIZE ,0);
