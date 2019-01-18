@@ -32,10 +32,19 @@ struct MONSTER
     int position_x;
     int position_y;
 };
+struct BOSS
+{
+    ALLEGRO_BITMAP* boss;
+    ALLEGRO_BITMAP* black;
+    int blood;
+    int position_x;
+    int position_y;
+};
 
 void load_monster(struct MONSTER *monster);
 void load_plane(struct PLANE *plane);
-void monster_fall_straight(struct MONSTER *monster_1,struct MONSTER *monster_2, struct PLANE *plane);
+void load_boss(struct BOSS *boss);
+void monster_fall_straight(struct MONSTER *monster_1 , struct MONSTER *monster_2 , struct PLANE *plane,struct BOSS *boss );
 int random(int *ptr,int max,int min);
 void monster_fall_parallel(struct MONSTER *monster,int y,int *count);
 void determine_appear_count(int *count);
@@ -46,6 +55,10 @@ void object_position(int *position_x,int *position_y,int x,int y);
 void collition(int determine,int *object1_position_x,int *object1_position_y,int object1_size,int *object2_position_x,int *object2_position_y,int object2_size);
 void monster_plane_collition(struct MONSTER *monster,struct PLANE *plane);
 
+void reverseVerticalDirection();
+void reverseHorizontalDirection();
+void Move_Boss(struct BOSS *boss);
+void boss_transform(struct BOSS *boss);
 float FPS=1;
 
 
@@ -58,15 +71,23 @@ float FPS=1;
 #define plane_H 50
 #define MONSTER_SIZE 70
 #define PLANE_SIZE 50
+#define BOSS_SIZE 100
 #define BULLET_SIZE 30
 
+#define RIGHT 0
+#define LEFT 1
+#define UP 2
+#define DOWN 3
 
 int plane_x ;
+int boss_x,boss_y;
+int direction;
 
 ALLEGRO_EVENT_QUEUE* event_queue = NULL; /* create event queue */
 ALLEGRO_TIMER *timer1 = NULL;
 ALLEGRO_EVENT events;
-ALLEGRO_BITMAP *plane = NULL; /* pointer to the bar's image bitmap */
+ALLEGRO_BITMAP *plane = NULL; /* pointer to the plane's image bitmap */
+ALLEGRO_BITMAP *boss = NULL;
 ALLEGRO_DISPLAY *display = NULL;
 ALLEGRO_KEYBOARD_STATE KBstate;
 
@@ -81,6 +102,7 @@ int main()
     struct MONSTER monster_1[TRACK]= {NULL};
     struct MONSTER monster_2[TRACK]= {NULL};
     struct PLANE plane[1]= {NULL};
+    struct BOSS boss[1]={NULL};
 
     // Initialize Allegro
 
@@ -102,13 +124,14 @@ int main()
     display = al_create_display(DISPLAY_WIDTH, DISPLAY_HEIGHT);
 
 
-    monster_fall_straight(monster_1 , monster_2 , plane);
+    monster_fall_straight(monster_1 , monster_2 , plane,boss);
 
     // Wait for keyboard event
 
     al_wait_for_event(event_queue, &events);
     al_destroy_event_queue(event_queue);
     al_destroy_bitmap( plane); /* destroy the ball bitmap */
+   // al_destory_bitmap( boss);
     al_destroy_display( display);
 
 
@@ -131,16 +154,20 @@ void load_plane(struct PLANE *plane)
     (plane+0)->plane=al_load_bitmap("./plane.jpg");
     (plane+0)->black=al_load_bitmap("./black.jpg");
 }
+void load_boss(struct BOSS *boss)
+{
+    (boss+0)->boss=al_load_bitmap("./boss.jpg");
+    (boss+0)->black=al_load_bitmap("./black.jpg");
+}
 
-
-void monster_fall_straight(struct MONSTER *monster_1 , struct MONSTER *monster_2 , struct PLANE *plane )
+void monster_fall_straight(struct MONSTER *monster_1 , struct MONSTER *monster_2 , struct PLANE *plane,struct BOSS *boss )
 {
     int y1,y2;
     int count_vary1[TRACK];
     int count_vary2[TRACK];
     int count1,count2;
 
-
+    load_boss(boss);
     load_plane(plane);
 
     y1=0;
@@ -149,7 +176,9 @@ void monster_fall_straight(struct MONSTER *monster_1 , struct MONSTER *monster_2
     count2=(DISPLAY_HEIGHT/2);
     //load_plane(plane);
     plane_x = DISPLAY_HEIGHT / 2;
-
+    boss_x=DISPLAY_WIDTH/2;
+    boss_y=1;
+    direction=rand()%2;
     while(1)
     {
        al_get_keyboard_state(&KBstate);
@@ -157,17 +186,40 @@ void monster_fall_straight(struct MONSTER *monster_1 , struct MONSTER *monster_2
           break;
 
         Move_Plane(plane);
-
+        if(count1<1280){
         y1=monster_fall_wave(count1,count_vary1,y1,monster_1);
         monster_fall_parallel(monster_1,y1,count_vary1);
-
-        y2=monster_fall_wave(count2,count_vary2,y2,monster_2);
-        monster_fall_parallel(monster_2,y2,count_vary2);
-
         monster_plane_collition(monster_1,plane);
         monster_plane_collition(monster_2,plane);
+        }
+        if(count2<1280){
+        y2=monster_fall_wave(count2,count_vary2,y2,monster_2);
+        monster_fall_parallel(monster_2,y2,count_vary2);
+        }
+        if(count1>1280&&count1<5000){
+            Move_Boss(boss);
+al_draw_scaled_bitmap((boss)->boss, 0, 0,al_get_bitmap_width ((boss)->boss), al_get_bitmap_height((boss)->boss), boss_x, boss_y, BOSS_SIZE , BOSS_SIZE ,0);
+object_position(&(boss)->position_x,&(boss)->position_y,boss_x,boss_y);
+        }
+        if(count1%1500==0)
+            direction=DOWN;
 
-        al_rest(0.005);
+
+                if(count1>5000){
+                Move_Boss(boss);
+            al_draw_scaled_bitmap((boss)->boss, 0, 0,al_get_bitmap_width ((boss)->boss), al_get_bitmap_height((boss)->boss),boss_x, boss_y, BOSS_SIZE /2, BOSS_SIZE/2 ,0);
+
+        }
+//        if(count1==5000){
+//                direction=3;
+//
+//        Move_Boss;
+//        al_draw_scaled_bitmap((boss)->boss, 0, 0,al_get_bitmap_width ((boss)->boss), al_get_bitmap_height((boss)->boss),(boss)->position_x-BOSS_SIZE/4-10, (boss)->position_y, BOSS_SIZE /2, BOSS_SIZE/2 ,0);
+//        }
+//        monster_plane_collition(monster_1,plane);
+//        monster_plane_collition(monster_2,plane);
+
+        al_rest(0.001);
         al_flip_display();
 
         y1 = y1 + 1;
@@ -269,6 +321,7 @@ void Move_Plane(struct PLANE *plane)
 
 }
 
+
 void collition(int determine,int *object1_position_x,int *object1_position_y,int object1_size,int *object2_position_x,int *object2_position_y,int object2_size)
 {
        if( (*object1_position_y+object1_size)+(DISPLAY_HEIGHT-*object2_position_y) > DISPLAY_HEIGHT)
@@ -291,4 +344,58 @@ void monster_plane_collition(struct MONSTER *monster,struct PLANE *plane)
         collition(i,&(monster+i)->position_x,&(monster+i)->position_y,MONSTER_SIZE,&(plane)->position_x,&(plane)->position_y,PLANE_SIZE);
     }
 }
+void Move_Boss(struct BOSS *boss)
+{
+    switch ( direction ) {
+      case RIGHT:
+         boss_x=boss_x+1;
 
+         break;
+      case LEFT:
+         boss_x=boss_x-1;
+         break;
+      case UP:
+         boss_y=boss_y-1;
+         break;
+      case DOWN:
+         boss_y=boss_y+1;
+         break;
+   }
+   if ( boss_y <= 0 || boss_y >= DISPLAY_HEIGHT-BOSS_SIZE )
+      reverseVerticalDirection(); /* make it go the other way */
+
+
+   if ( boss_x <= 0 || boss_x >= (DISPLAY_WIDTH - BOSS_SIZE) )
+    reverseHorizontalDirection();
+    //al_draw_scaled_bitmap((boss)->boss, 0, 0,al_get_bitmap_width ((boss)->boss), al_get_bitmap_height((boss)->boss), boss_x, boss_y, BOSS_SIZE , BOSS_SIZE ,0);
+
+}
+void reverseVerticalDirection()
+{
+   if ( direction == UP  ) direction = LEFT;
+    else if ( direction == DOWN ) direction = UP;
+
+} /* end function reverseVerticalDirection */
+
+void reverseHorizontalDirection() /* reverses the horizontal direction */
+{
+   switch ( direction ){
+      case RIGHT:
+          direction = LEFT;
+         break;
+      case LEFT:
+         direction = RIGHT;
+         break;
+
+   } /* end switch */
+} /* end function reverseHorizontalDirection */
+void boss_transform(struct BOSS *boss)
+{
+    int i;
+
+    al_draw_scaled_bitmap((boss)->boss, 0, 0,al_get_bitmap_width ((boss)->boss), al_get_bitmap_height((boss)->boss),(boss)->position_x+BOSS_SIZE/4+10, (boss)->position_y, BOSS_SIZE /2, BOSS_SIZE/2 ,0);
+    al_draw_scaled_bitmap((boss)->boss, 0, 0,al_get_bitmap_width ((boss)->boss), al_get_bitmap_height((boss)->boss),(boss)->position_x-BOSS_SIZE/4-10, (boss)->position_y, BOSS_SIZE /2, BOSS_SIZE/2 ,0);
+
+    Move_Boss(boss);
+    i=i+1;
+}
