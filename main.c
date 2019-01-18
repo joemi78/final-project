@@ -20,12 +20,14 @@ struct ALLEGRO_OBJECT
 struct PLANE
 {
     ALLEGRO_BITMAP* plane;
+    ALLEGRO_BITMAP* black;
     int position_x;
     int position_y;
 };
 struct MONSTER
 {
     ALLEGRO_BITMAP* monster1;
+    ALLEGRO_BITMAP* black;
     int blood;
     int position_x;
     int position_y;
@@ -41,7 +43,7 @@ int monster_fall_wave(int count,int *count_vary,int y,struct MONSTER *monster);
 void Move_Plane( struct PLANE *plane );
 void delete_monster_picture(struct MONSTER *monster);
 void object_position(int *position_x,int *position_y,int x,int y);
-void collition(int determin,int *object1_position_x,int *object1_position_y,int object1_size,int *object2_position_x,int *object2_position_y,int object2_size);
+void collition(int determine,int *object1_position_x,int *object1_position_y,int object1_size,int *object2_position_x,int *object2_position_y,int object2_size);
 void monster_plane_collition(struct MONSTER *monster,struct PLANE *plane);
 
 float FPS=1;
@@ -119,13 +121,15 @@ void load_monster(struct MONSTER *monster)
 
     for(i=0; i<TRACK; i=i+1)
     {
-        monster[i].monster1=al_load_bitmap("./blue.jpg");
+        (monster+i)->monster1=al_load_bitmap("./blue.jpg");
+        (monster+i)->black=al_load_bitmap("./black.jpg");
     }
 }
 
 void load_plane(struct PLANE *plane)
 {
     (plane+0)->plane=al_load_bitmap("./plane.jpg");
+    (plane+0)->black=al_load_bitmap("./black.jpg");
 }
 
 
@@ -224,6 +228,7 @@ void monster_fall_parallel(struct MONSTER *monster,int y,int *count)
     int i;
     for(i=0; i<TRACK; i=i+1)
     {
+        object_position(&(monster+i)->position_x,&(monster+i)->position_y,i*(DISPLAY_WIDTH / TRACK),0);
         if((*(count+i)==1) || (*(count+i)==2) || (*(count+i)==3) || (*(count+i)==4))
         {
             al_draw_scaled_bitmap((monster+i)->monster1, 0, 0,al_get_bitmap_width ((monster+i)->monster1), al_get_bitmap_height((monster+i)->monster1), i*(DISPLAY_WIDTH / TRACK), y,MONSTER_SIZE, MONSTER_SIZE,0);
@@ -264,23 +269,26 @@ void Move_Plane(struct PLANE *plane)
 
 }
 
-void collition(int determin,int *object1_position_x,int *object1_position_y,int object1_size,int *object2_position_x,int *object2_position_y,int object2_size)
+void collition(int determine,int *object1_position_x,int *object1_position_y,int object1_size,int *object2_position_x,int *object2_position_y,int object2_size)
 {
-    if( (*object1_position_y+object1_size)+(DISPLAY_HEIGHT-*object2_position_y)==DISPLAY_HEIGHT)
-    {
-        if( (*object1_position_x<*object2_position_x+object2_size) && (*object2_position_x<*object1_position_x+object1_size) )
-        {
-            printf(" 1 \n");
-        }
-    }
+       if( (*object1_position_y+object1_size)+(DISPLAY_HEIGHT-*object2_position_y) > DISPLAY_HEIGHT)
+       {
+           if( (*object1_position_x <= *object2_position_x + object2_size) && (*object1_position_x+object1_size>= *object2_position_x) )
+           {
+               printf("num = %d \n",determine);
+           }
+       }
+
+
 }
+
 void monster_plane_collition(struct MONSTER *monster,struct PLANE *plane)
 {
     int i;
     i=0;
     for(i=0;i<TRACK;i=i+1)
     {
-        collition(1,&(monster+i)->position_x,&(monster+i)->position_y,MONSTER_SIZE,&(plane)->position_x,&(plane)->position_y,PLANE_SIZE);
+        collition(i,&(monster+i)->position_x,&(monster+i)->position_y,MONSTER_SIZE,&(plane)->position_x,&(plane)->position_y,PLANE_SIZE);
     }
 }
 
